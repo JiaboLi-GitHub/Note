@@ -1,0 +1,43 @@
+# 1.面剔除
+
+## 1.1.原理
+
+面剔除就是OpenGL渲染所有面向观察者的面，丢弃背向观察者的面。一般使用环绕顺序判断证明和背面。
+
+一个立方体，最多时只能同时看到三个面，所以使用面剔除优化立方体，可以提升百分之五十以上。
+
+![faceculling_frontback](面剔除.assets/faceculling_frontback.png)
+
+## 1.2.使用
+
+**启动面剔除**
+
+```C++
+glEnable(GL_CULL_FACE);
+```
+
+**关闭面剔除**
+
+```
+glDisable(GL_CULL_FACE);
+```
+
+**设置需要剔除的面的类型**
+
+```
+void glCullFace(GLenum mode);
+```
+
+- GL_BACK：只剔除背向面
+- GL_FRONT：只剔除正向面
+- GL_FRONT_AND_BACK：剔除正向面和背向面
+
+**设置正向面的环绕方式**
+
+```
+void glFrontFace(GLenum mode);
+```
+
+- GL_CCW：逆时针的环绕顺序
+- GL_CW：顺时针的环绕顺序
+
