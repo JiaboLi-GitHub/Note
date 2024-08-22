@@ -1,0 +1,169 @@
+# 1.立方体贴图
+
+## 1.1.原理
+
+立方体贴图就是一个包含了6个2D纹理的纹理，每个2D纹理都组成了立方体的一个面。
+
+## 1.2.使用
+
+**创建立方体贴图**
+
+```c++
+unsigned int textureID;
+glGenTextures(1, &textureID);
+glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
+```
+
+**加载图片**
+
+```c++
+int width, height, nrChannels;
+unsigned char *data;  
+for(unsigned int i = 0; i < textures_faces.size(); i++)
+{
+    data = stbi_load(textures_faces[i].c_str(), &width, &height, &nrChannels, 0);
+    glTexImage2D(
+        GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 
+        0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data
+    );
+}
+```
+
+**设置环绕方式和过滤方式**
+
+```c++
+glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+```
+
+**判断着色器**
+
+```c
+in vec3 textureDir; // 代表3D纹理坐标的方向向量
+uniform samplerCube cubemap; // 立方体贴图的纹理采样器
+
+void main()
+{             
+    FragColor = texture(cubemap, textureDir);
+}
+```
+
+## 1.3.扩展
+
+### 1.3.1.天空盒
+
+天空盒是一个包含了整个场景的大立方体。
+
+当天空盒立方体处于原点时，它的每一个位置向量都是从原点出发的方向向量。这个方向向量正是纹理坐标。
+
+当观察者移动时，我们不希望天空盒也移动，所以应该移除变换矩阵的位移部分。
+
+```c++
+glm::mat4 view = glm::mat4(glm::mat3(camera.GetViewMatrix()));
+```
+
+可以使用提前深度测试丢弃天空盒被遮挡的片段。
+
+![cubemaps_skybox](立方体贴图.assets/cubemaps_skybox.png)
+
+
+
+### 1.3.2.环境映射
+
+**反射**
+
+![cubemaps_reflection_theory](立方体贴图.assets/cubemaps_reflection_theory.png)
+
+
+
+```C++
+#version 330 core
+out vec4 FragColor;
+
+in vec3 Normal;
+in vec3 Position;
+
+uniform vec3 cameraPos;
+uniform samplerCube skybox;
+
+void main()
+{             
+    vec3 I = normalize(Position - cameraPos);
+    vec3 R = reflect(I, normalize(Normal));
+    FragColor = vec4(texture(skybox, R).rgb, 1.0);
+}
+```
+
+
+
+**折射**
+
+![cubemaps_refraction_theory](立方体贴图.assets/cubemaps_refraction_theory.png)
+
+
+
+| 材质 | 折射率 |
+| :--- | :----- |
+| 空气 | 1.00   |
+| 水   | 1.33   |
+| 冰   | 1.309  |
+| 玻璃 | 1.52   |
+| 钻石 | 2.42   |
+
+使用折射率计算光传播的两种材质间的比值：光线从空气进入玻璃 1.00 / 1.52 = 0.658
+
+```c
+void main()
+{             
+    float ratio = 1.00 / 1.52;
+    vec3 I = normalize(Position - cameraPos);
+    vec3 R = refract(I, normalize(Normal), ratio);
+    FragColor = vec4(texture(skybox, R).rgb, 1.0);
+}void main()
+{             
+    float ratio = 1.00 / 1.52;
+    vec3 I = normalize(Position - cameraPos);
+    vec3 R = refract(I, normalize(Normal), ratio);
+    FragColor = vec4(texture(skybox, R).rgb, 1.0);
+}
+```
+
+**动态环境贴图***
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
