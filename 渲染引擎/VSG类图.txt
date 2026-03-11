@@ -1,0 +1,76 @@
+@startuml
+class node
+class Text
+class Group
+class Viewer {
+  -compileManager: CompileManager
+  -recordAndSubmitTask: RecordAndSubmitTask
+  +compile(): void
+}
+class Window
+class Compilable
+class Command
+class StateCommand
+class GraphicsPipelineState
+class Camera
+class CommandGraph
+class RenderGraph
+class CompileManager {
+  +compileTask(ref_ptr<RecordAndSubmitTask>, const ResourceRequirements&): CompileResult
+}
+class RecordAndSubmitTask
+class View
+class Commands
+class StateGroup
+
+node <|-- Text
+node <|-- Group
+node <|-- Compilable
+node <|-- Camera
+Compilable <|-- Command
+Command <|-- StateCommand
+Command <|-- Commands
+StateCommand <|-- GraphicsPipelineState
+Group <|-- CommandGraph
+Group <|-- RenderGraph
+Group <|-- View
+Group <|-- StateGroup
+
+Viewer "1" o--> "n" Window
+Viewer *--> CompileManager
+Viewer *--> RecordAndSubmitTask
+CompileManager ..> RecordAndSubmitTask : 编译
+
+note bottom of Compilable
+  封装Vulkan相关，需要编译的基类
+end note
+
+note bottom of Command
+  封装Vulkan指令相关的基类
+end note
+
+note bottom of StateCommand
+  封装Vulkan状态指令相关的基类
+end note
+
+note bottom of GraphicsPipelineState
+  封装Vulkan管线状态相关的基类
+end note
+
+note bottom of CommandGraph
+  管理Vulkan指令缓冲
+end note
+
+note bottom of Window
+  管理Vulkan实例、窗口表面、物理设备、逻辑设备、交换链
+end note
+
+note bottom of RenderGraph
+  管理渲染通道指令
+end note
+
+note bottom of View
+  绑定相机与场景
+end note
+
+@enduml
